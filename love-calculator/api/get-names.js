@@ -19,8 +19,13 @@ const NameSchema = new mongoose.Schema({
 const Names = mongoose.models.Names || mongoose.model('Names', NameSchema);
 
 module.exports = async (req, res) => {
-    await connectToDatabase();
+    try {
+        await connectToDatabase();
 
-    const latestNames = await Names.findOne().sort({ _id: -1 }).exec();
-    res.send(latestNames);
+        const latestNames = await Names.findOne().sort({ _id: -1 }).exec();
+        res.send(latestNames);
+    } catch (err) {
+        console.error('Error fetching names:', err);
+        res.status(500).send({ error: 'Failed to fetch names.' });
+    }
 };
