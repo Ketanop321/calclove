@@ -2,22 +2,22 @@
   "version": 2,
   "builds": [
     {
-      "src": "public/*",
+      "src": "love-calculator/public/*",
       "use": "@vercel/static"
     },
     {
-      "src": "api/*.js",
+      "src": "love-calculator/api/*.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "dest": "/love-calculator/api/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "/public/$1"
+      "dest": "/love-calculator/public/$1"
     }
   ]
 }

@@ -29,11 +29,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 var name1 = document.getElementById("name1");
 var name2 = document.getElementById("name2");
 var calcBtn = document.querySelector("#btn");
-var loveScore = Math.random() * 100;
+var loveScore = Math.floor(Math.random() * 100) + 1;
 
-var loveInfo = document.getElementById("loveInfo");
 var reloadBtn = document.getElementById("reload");
-loveScore = Math.floor(loveScore) + 1;
+
+// Track active intervals so they can be cleared on repeated clicks
+var heartIntervals = [];
 
 const body = document.querySelector("body");
 
@@ -43,11 +44,6 @@ function createHeart() {
     heart.style.left = (Math.random() * 100) + "vw";
     heart.style.animationDuration = (Math.random() * 3) + 2 + "s";
     body.appendChild(heart);
-}
-
-// Capitalize input values
-function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 // Love Score Counter
@@ -84,6 +80,48 @@ const hash = function (str, seed = 0) {
 
 // Add event listener to button
 calcBtn.addEventListener("click", async function (e) {
+    e.preventDefault();
+
+    // Validate inputs before doing anything
+    if (name1.value === "" && name2.value === "") {
+        alert("You can't leave fields empty");
+        return;
+    } else if (name1.value === "") {
+        alert("Please Enter Your Name");
+        return;
+    } else if (name2.value === "") {
+        alert("Please Enter His/Her Name");
+        return;
+    }
+
+    // Clear any previous heart animation intervals
+    heartIntervals.forEach(function (id) { clearInterval(id); });
+    heartIntervals = [];
+
+    // Increase the chance of getting a love score greater than 90%
+    let randomFactor = Math.random();
+    if (
+        hash(name1.value.toUpperCase()) === 493572976860604 &&
+        hash(name2.value.toUpperCase()) === 8563725863411927
+    ) {
+        loveScore = Math.floor(Math.random() * (100 - 90) + 90);
+    } else if (randomFactor < 0.15) { // Adjust this factor to increase chances
+        loveScore = Math.floor(Math.random() * (100 - 90) + 90);
+    } else {
+        loveScore = Math.floor(Math.random() * 100) + 1;
+    }
+
+    love();
+    if (loveScore > 90) {
+        heartIntervals.push(setInterval(createHeart, 100));
+        heartIntervals.push(setInterval(function () {
+            var heartArr = document.querySelectorAll(".fa-heart");
+            if (heartArr.length > 200) {
+                heartArr[0].remove();
+            }
+        }, 100));
+    }
+
     // Save names to the server
     try {
         await fetch('/api/save-names', {
@@ -96,40 +134,6 @@ calcBtn.addEventListener("click", async function (e) {
                 name2: name2.value
             })
         });
-
-        // Increase the chance of getting a love score greater than 90%
-        let randomFactor = Math.random();
-        if (
-            hash(name1.value.toUpperCase()) === 493572976860604 &&
-            hash(name2.value.toUpperCase()) === 8563725863411927
-        ) {
-            loveScore = Math.random() * (100 - 90) + 90;
-        } else if (randomFactor < 0.15) { // Adjust this factor to increase chances
-            loveScore = Math.random() * (100 - 90) + 90;
-        } else {
-            loveScore = Math.random() * 100; // Delete this line if you want to keep the same value in the same session.
-        }
-
-        e.preventDefault();
-        if (name1.value == "" && name2.value == "") {
-            alert("You can't leave fields empty");
-            return;
-        } else if (name1.value == "") {
-            alert("Please Enter Your Name");
-        } else if (name2.value == "") {
-            alert("Please Enter His/Her Name");
-        }
-
-        love();
-        if (loveScore > 90) {
-            setInterval(createHeart, 100);
-            setInterval(function name(params) {
-                var heartArr = document.querySelectorAll(".fa-heart");
-                if (heartArr.length > 200) {
-                    heartArr[0].remove();
-                }
-            }, 100);
-        }
     } catch (error) {
         console.error('Error saving names:', error);
     }
